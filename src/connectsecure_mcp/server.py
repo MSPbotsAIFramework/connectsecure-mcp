@@ -99,62 +99,14 @@ def create_mcp_server(settings: Settings) -> FastMCP:
 
     from .tools import (
         active_directory,
-        ad_audit,
-        agent,
-        application_baseline,
         asset,
-        asset_data,
-        attack_surface,
-        backup_software,
         company,
-        compliance,
-        compliance_assessment,
-        credentials,
-        discovery_settings,
-        edr,
-        event_set,
-        external_scan,
-        firewall,
-        integration,
-        jobs,
-        patch_management,
-        pii,
-        reports,
-        scheduler,
-        settings as settings_tools,
-        tags,
-        ticket_template,
         users,
-        vulnerabilities,
     )
 
     active_directory.register(mcp, client_factory)
-    ad_audit.register(mcp, client_factory)
-    agent.register(mcp, client_factory)
-    application_baseline.register(mcp, client_factory)
     asset.register(mcp, client_factory)
-    asset_data.register(mcp, client_factory)
-    attack_surface.register(mcp, client_factory)
-    backup_software.register(mcp, client_factory)
     company.register(mcp, client_factory)
-    compliance.register(mcp, client_factory)
-    compliance_assessment.register(mcp, client_factory)
-    credentials.register(mcp, client_factory)
-    discovery_settings.register(mcp, client_factory)
-    edr.register(mcp, client_factory)
-    event_set.register(mcp, client_factory)
-    external_scan.register(mcp, client_factory)
-    firewall.register(mcp, client_factory)
-    integration.register(mcp, client_factory)
-    jobs.register(mcp, client_factory)
-    patch_management.register(mcp, client_factory)
-    pii.register(mcp, client_factory)
-    reports.register(mcp, client_factory)
-    scheduler.register(mcp, client_factory)
-    settings_tools.register(mcp, client_factory)
-    tags.register(mcp, client_factory)
-    ticket_template.register(mcp, client_factory)
     users.register(mcp, client_factory)
-    vulnerabilities.register(mcp, client_factory)
 
     return mcp

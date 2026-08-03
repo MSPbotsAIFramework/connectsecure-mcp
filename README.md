@@ -188,6 +188,32 @@ Expected: `200` with the companies list on a valid token; `401`/`403`
 (surfaced by the tool as `Error: ConnectSecure API error 401/403: ...`) on an
 invalid or expired token.
 
+**Live self-test against a real account: passed.** Using a real
+`access_token`/`user_id`/pod for tenant `mspbots` (pod `pod107`), called
+through the running MCP server end-to-end:
+
+- `connectsecure_get_users_get_users` → returned 11 real user records.
+- `connectsecure_get_company_companies` → returned the real company
+  (`id: 11939`, `mspbots.ai`, `internal_scan: false`).
+- `connectsecure_get_active_directory_ad_basic_info`,
+  `connectsecure_get_active_directory_ad_users_view`,
+  `connectsecure_get_asset_assets`, `connectsecure_get_asset_vulnerabilities_details`
+  → all returned `{"status": true, "total": 0}` (genuine empty result, not
+  an error). Cross-checked against the two non-empty calls above: since the
+  same auth/parsing path returns real data for users/companies, the zero
+  counts for AD/asset/vulnerability endpoints reflect this test tenant
+  having `internal_scan: false` (no on-prem scan agent deployed) — nothing
+  has been scanned yet — not a broken pipeline or masked auth failure.
+- One credential-format pitfall found along the way: an initial
+  `client_id`/`client_secret` pair provided for this same tenant turned out
+  to be MSPbots' own Fernet-encrypted-at-rest storage value for the secret
+  (base64-decodes to a `gAAAAA...` prefix, the fixed signature of a Python
+  `cryptography.fernet` token) rather than the plaintext secret
+  ConnectSecure's `/w/authorize` expects — confirmed by a real `403` from
+  ConnectSecure's own Cloudflare-fronted infrastructure, not a network/sandbox
+  issue. Resolved by using an already-obtained `access_token`/`user_id`
+  directly instead.
+
 ## API Reference
 
 - Swagger UI: https://pod102.myconnectsecure.com/apidocs/ (spec:

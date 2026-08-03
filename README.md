@@ -58,8 +58,13 @@ token obtained out-of-band via:
 
 ```
 POST {base_url}/w/authorize
-Client-Auth-Token: base64(tenant_name + client_id : client_secret)
+Client-Auth-Token: base64(tenant_name + "+" + client_id + ":" + client_secret)
 ```
+
+(Note the literal `+` between `tenant_name` and `client_id` — confirmed against
+both ConnectSecure's own Swagger description and MSPbots' real implementation
+in `autointegration`'s `ConnectSecureAuth.java`; easy to miss since the
+Swagger text renders it ambiguously as "tenant+client_id".)
 
 which returns `{"data": {"access_token": "...", "user_id": "..."}}`. This
 server does not perform that exchange itself — like the other OAuth2-based
@@ -204,15 +209,25 @@ through the running MCP server end-to-end:
   counts for AD/asset/vulnerability endpoints reflect this test tenant
   having `internal_scan: false` (no on-prem scan agent deployed) — nothing
   has been scanned yet — not a broken pipeline or masked auth failure.
-- One credential-format pitfall found along the way: an initial
-  `client_id`/`client_secret` pair provided for this same tenant turned out
-  to be MSPbots' own Fernet-encrypted-at-rest storage value for the secret
-  (base64-decodes to a `gAAAAA...` prefix, the fixed signature of a Python
-  `cryptography.fernet` token) rather than the plaintext secret
-  ConnectSecure's `/w/authorize` expects — confirmed by a real `403` from
-  ConnectSecure's own Cloudflare-fronted infrastructure, not a network/sandbox
-  issue. Resolved by using an already-obtained `access_token`/`user_id`
-  directly instead.
+- **`Client-Auth-Token` format correction**: the initial `/w/authorize`
+  attempt (base64 of `tenant_name` + `client_id` + `:` + `client_secret`,
+  no separator between `tenant_name` and `client_id`) got a real `403` from
+  ConnectSecure. This was first (wrongly) suspected to mean the provided
+  `client_secret` was still MSPbots-internal ciphertext (it base64-decodes
+  to a `gAAAAA...`-prefixed string, the signature of a Python
+  `cryptography.fernet` token). That hypothesis was disproved by checking
+  the real implementation in MSPbots' `autointegration` repo
+  (`client/src/main/java/mspbots/integration/client/core/auth/impl/ConnectSecureAuth.java`):
+  the actual formula inserts a literal `+` between `tenant_name` and
+  `client_id` — `base64(tenant_name + "+" + client_id + ":" + client_secret)`
+  — and uses `client_secret` completely as-is, with no decryption step
+  anywhere in that codebase. Rebuilding the token with the literal `+`
+  included, using the exact same (unmodified) `client_secret` value, got a
+  real `200` from `/w/authorize` with a valid `access_token`. So the
+  `client_secret` was fine all along; the bug was purely in the test
+  script's string concatenation, not in ConnectSecure, MSPbots' credential
+  storage, or this MCP server (which never performs the `/w/authorize`
+  exchange itself — see Authentication).
 
 ## API Reference
 

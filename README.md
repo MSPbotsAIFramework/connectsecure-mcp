@@ -17,38 +17,55 @@ and more) as MCP tools.
 
 ## Scope
 
-**50 read-only (`GET`) tools**, trimmed down from an initial 285-tool build
-that covered ConnectSecure's entire public query API. The full build hit the
-platform's aggregate MCP function-declaration ceiling (Vertex AI/Gemini caps
-a single model call at 512 function declarations across *all* loaded MCP
-servers), so scope was cut to the tools with real signal:
+**19 read-only (`GET`) tools**, trimmed twice: first from an initial
+285-tool full-API build down to 50 tools (to stay under Vertex AI/Gemini's
+512-function-declaration ceiling across all loaded MCP servers), then
+again on 2026-08-04 down to 19 tools per the "actual usage + minimal
+same-category CRUD" scope decision applied across this program's MCP
+fleet.
 
-- **All 11 endpoints MSPbots' own production integration actually calls**
-  (confirmed via `web/int/sys/integration/api/list` against integration id
-  `2008424422784020481`), spread across Asset/Company/Users/Active Directory.
-- **Active Directory (22 tools, full category)** — kept in full since AD
-  posture (users, password policies, basic info, Azure secure score, etc.) is
-  a primary use case for this server.
-- **Company (9, full category)** and **Users (1)** — small, kept in full.
-- **Asset (18 curated core/summary tools)** — trimmed from 110: kept
-  list/summary-level queries (`assets`, `asset_view`, `asset_stats`,
-  `distinct_os`, `distinct_platform`, `total_asset_count`, `risk_score`,
-  `vulnerabilities_details`, `vulnerabilities_count`,
-  `asset_critical_vulnerabilities`, `external_asset_vulnerabilities`,
-  `remediate_records`, `sw_problems_remediations_view`, `problems_summary`,
-  `asset_software`, `asset_users`, `get_asset_remediation_plan`,
-  `remediation_plan_global`); dropped narrow drill-down variants
-  (`_by_id`, `_suppressed`, `_tag`, per-company/per-day breakdowns, etc.).
+The 2026-08-04 trim confirmed **all 11 endpoints MSPbots' own production
+integration actually calls** (via `web/int/sys/integration/api/list`
+against integration id `2008424422784020481`):
+`vulnerabilities_details`, `external_asset_vulnerabilities`,
+`remediate_records`, `asset_critical_vulnerabilities`, `asset_view`,
+`sw_problems_remediations_view` (all `asset`); `azure_secure_score`,
+`ad_users_view`, `ad_password_policies` (all `active_directory`);
+`companies`/`company` (`company`); `users` (`users`). Every one of those
+is kept, plus a small amount of same-category padding for baseline
+visibility:
 
-**Cut entirely** (available in ConnectSecure's API but not exposed here —
-see Known Gaps): Asset Data (33, field-level machine detail), Vulnerabilities
-category (22, overlapped with the vulnerability summaries kept in Asset),
-Compliance (10), Reports (7), Firewall (12), Application Baseline (8),
-Integration (6), Ad Audit, Agent, Attack Surface, Tags, Credentials,
-Discovery Settings, Compliance Assessment, Backup Software, EDR, Event Set,
-External Scan, Jobs, Patch Management, PII, Scheduler, Settings, Ticket
-Template (2-4 each, mostly administrative/config endpoints). Write operations
-(`POST`/`PATCH`/`DELETE`, ~78 of them) were never in scope — see **Known Gaps**.
+- **`asset` (9 of the prior 18)**: the 6 actually-used tools above, plus
+  `assets` (base list), `asset_stats`, `risk_score`.
+- **`active_directory` (6 of the prior 22)**: the 3 actually-used tools
+  above, plus `ad_basic_info`, `ad_domain_details`, `ad_groups_view`.
+- **`company` (3 of the prior 9)**: `companies`, `companies_by_id`,
+  `company_stats`.
+- **`users` (1, unchanged)**: `get_users`.
+
+**Cut entirely** on 2026-08-04 (available in the prior 50-tool build but
+not exposed here): the other 16 `asset` tools (`asset_software`,
+`asset_users`, `distinct_os`, `distinct_platform`,
+`total_asset_count`, `vulnerabilities_count`, `problems_summary`,
+`get_asset_remediation_plan`, `remediation_plan_global`), the other 16
+`active_directory` tools (computers/GPOs/groups/OUs/roles detail views,
+Azure AD logs/licenses, user licenses/details), and the other 6 `company`
+tools (`adaudit`, `asset_windows_compatibility`, `event_tickets`,
+`jobs_view` + `jobs_view_by_id`).
+
+**Cut in the earlier 285→50 pass** (still not exposed here — see Known
+Gaps for the full accounting): Asset Data (33, field-level machine
+detail), Vulnerabilities category (22, overlapped with the vulnerability
+summaries kept in Asset), Compliance (10), Reports (7), Firewall (12),
+Application Baseline (8), Integration (6), Ad Audit, Agent, Attack
+Surface, Tags, Credentials, Discovery Settings, Compliance Assessment,
+Backup Software, EDR, Event Set, External Scan, Jobs, Patch Management,
+PII, Scheduler, Settings, Ticket Template (2-4 each, mostly
+administrative/config endpoints). Write operations (`POST`/`PATCH`/
+`DELETE`, ~78 of them) were never in scope in either pass. If a removed
+tool is needed later, the vendor's Swagger spec (linked below) still
+documents it and it can be re-added the same way the kept tools were
+generated.
 
 ## Authentication
 
@@ -116,58 +133,27 @@ require a `company_id` (get it from `connectsecure_get_company_companies`)
 and/or an `object_guid`/`asset_id` (get it from the corresponding list tool
 first).
 
-| Category | Tool | 功能 | 参数 |
+| Category | Tool | Description | Params |
 |---|---|---|---|
-| Active Directory | `connectsecure_get_active_directory_ad_basic_info` | Retrieve ad basic info. | company_id(必填), source(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_computers_view` | Retrieve ad computers view. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_domain_details` | Retrieve ad domain details. | company_id(必填), source(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_gpos_details` | Retrieve ad gpos details. | company_id(必填), domains_id(必填), source(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_gpos_view` | Retrieve ad gpos view. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_group_computers` | Retrieve ad group computers. | company_id(必填), object_guid(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_group_users` | Retrieve ad group users. | company_id(必填), object_guid(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_groups_view` | Retrieve ad groups view. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_ous_view` | Retrieve ad ous view. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_password_policies` | Retrieve ad password policies. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_roles` | Retrieve ad roles. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_roles_details` | Retrieve ad roles details. | company_id(必填), object_guid(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_roles_member` | Retrieve ad roles member. | company_id(必填), object_guid(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_user_licenses` | Retrieve ad user licenses. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_ad_users_view` | Retrieve ad users view. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_azure_ad_logs` | Retrieve azure ad logs. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_azure_licenses` | Retrieve azure licenses. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_azure_secure_score` | Retrieve azure secure score. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_get_computer_details` | Retrieve get computer details. | company_id(必填), object_guid(必填), source(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_get_groups_details` | Retrieve get groups details. | company_id(必填), object_guid(必填), source(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_get_ous_details` | Retrieve get ous details. | company_id(必填), object_guid(必填), source(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Active Directory | `connectsecure_get_active_directory_get_user_details` | Retrieve get user details. | company_id(必填), object_guid(必填), source(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_asset_critical_vulnerabilities` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_asset_software` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_asset_stats` | Retrieve asset stats. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_asset_users` | Retrieve asset users. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_asset_view` | Retrieve asset view. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_assets` | Retrieve assets. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_distinct_os` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_distinct_platform` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_external_asset_vulnerabilities` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_get_asset_remediation_plan` | Retrieve records. | having(必填), condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_problems_summary` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_remediate_records` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_remediation_plan_global` | Retrieve records. |  |
-| Asset | `connectsecure_get_asset_risk_score` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_sw_problems_remediations_view` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_total_asset_count` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_vulnerabilities_count` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Asset | `connectsecure_get_asset_vulnerabilities_details` | Retrieve records. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Company | `connectsecure_get_company_adaudit` | Retrieve adaudit. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Company | `connectsecure_get_company_asset_windows_compatibility` | Retrieve asset windows compatibility. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Company | `connectsecure_get_company_companies` | Retrieve companies. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Company | `connectsecure_get_company_companies_by_id` | Retrieve company. | id(必填) |
-| Company | `connectsecure_get_company_company_stats` | Retrieve company stats. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Company | `connectsecure_get_company_company_stats_by_id` | Retrieve company stat. | id(必填) |
-| Company | `connectsecure_get_company_event_tickets` | Retrieve event tickets. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Company | `connectsecure_get_company_jobs_view` | Retrieve jobs view. | condition(可选), skip(可选), limit(可选), order_by(可选) |
-| Company | `connectsecure_get_company_jobs_view_by_id` | Retrieve job view. | id(必填) |
-| Users | `connectsecure_get_users_get_users` | Retrieve Users. | condition(可选), skip(可选), limit(可选), order_by(可选) |
+| active_directory | `connectsecure_get_active_directory_ad_basic_info` | Retrieve ad basic info. | company_id, source, condition?, skip?, limit?, order_by? |
+| active_directory | `connectsecure_get_active_directory_ad_domain_details` | Retrieve ad domain details. | company_id, source, condition?, skip?, limit?, order_by? |
+| active_directory | `connectsecure_get_active_directory_ad_groups_view` | Retrieve ad groups view. | condition?, skip?, limit?, order_by? |
+| active_directory | `connectsecure_get_active_directory_ad_password_policies` | Retrieve ad password policies. | condition?, skip?, limit?, order_by? |
+| active_directory | `connectsecure_get_active_directory_ad_users_view` | Retrieve ad users view. | condition?, skip?, limit?, order_by? |
+| active_directory | `connectsecure_get_active_directory_azure_secure_score` | Retrieve azure secure score. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_asset_critical_vulnerabilities` | Retrieve records. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_asset_stats` | Retrieve asset stats. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_asset_view` | Retrieve asset view. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_assets` | Retrieve assets. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_external_asset_vulnerabilities` | Retrieve records. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_remediate_records` | Retrieve records. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_risk_score` | Retrieve records. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_sw_problems_remediations_view` | Retrieve records. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_vulnerabilities_details` | Retrieve records. | condition?, skip?, limit?, order_by? |
+| company | `connectsecure_get_company_companies` | Retrieve companies. | condition?, skip?, limit?, order_by? |
+| company | `connectsecure_get_company_companies_by_id` | Retrieve company. | id |
+| company | `connectsecure_get_company_company_stats` | Retrieve company stats. | condition?, skip?, limit?, order_by? |
+| users | `connectsecure_get_users_get_users` | Retrieve Users. | condition?, skip?, limit?, order_by? |
 
 ## 测试示例
 
@@ -238,20 +224,25 @@ through the running MCP server end-to-end:
 
 ## Known Gaps
 
-- **Trimmed from 285 to 50 tools, by explicit user decision**, after the
-  full 285-tool build tripped the platform's aggregate MCP
+- **Trimmed twice.** First from 285 to 50 tools, by explicit user decision,
+  after the full 285-tool build tripped the platform's aggregate MCP
   function-declaration ceiling (Vertex AI/Gemini caps a single model call at
-  512 function declarations across all loaded MCP servers). Kept: the 11
-  endpoints MSPbots' own production integration actually calls, the full
-  Active Directory/Company/Users categories, and 18 curated Asset
-  list/summary tools. Cut entirely: Asset Data, the standalone
+  512 function declarations across all loaded MCP servers) — see below for
+  what that pass cut. Then again on 2026-08-04, from 50 to 19 tools, per
+  the "actual usage + minimal same-category CRUD" scope decision applied
+  across this program's MCP fleet — kept the 11 endpoints MSPbots' own
+  production integration actually calls plus light same-category padding;
+  cut the rest of what had been "full category" Active Directory/Company
+  and the broader 18-tool Asset set down further. See **Scope** for the
+  exact breakdown of both passes. Any removed tool can be re-added on
+  request if a real use case needs it — the vendor's Swagger spec (linked
+  below) still documents its exact shape.
+- **285→50 pass cut entirely**: Asset Data, the standalone
   Vulnerabilities category, Compliance, Reports, Firewall, Application
   Baseline, Integration, and a long tail of small administrative/config
   categories (Ad Audit, Agent, Attack Surface, Tags, Credentials, Discovery
   Settings, Compliance Assessment, Backup Software, EDR, Event Set, External
-  Scan, Jobs, Patch Management, PII, Scheduler, Settings, Ticket Template) —
-  see **Scope** for the full breakdown. Any of these can be re-added on
-  request if a real use case needs them.
+  Scan, Jobs, Patch Management, PII, Scheduler, Settings, Ticket Template).
 - **Read-only scope, by explicit user decision** (unchanged from the
   original build): the ~78 `POST`/`PATCH`/`DELETE` write operations
   (create/update/delete company mappings, credentials, discovery settings,

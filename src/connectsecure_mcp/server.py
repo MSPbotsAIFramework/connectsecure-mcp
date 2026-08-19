@@ -90,6 +90,27 @@ def create_mcp_server(settings: Settings) -> FastMCP:
     # correctly behind a reverse proxy or docker network.
     mcp = FastMCP(
         name="connectsecure-mcp",
+        instructions=(
+            "ConnectSecure is a vulnerability management and IT security "
+            "compliance platform MSPs use to assess client networks — "
+            "vulnerability scanning, Active Directory security posture, and "
+            "per-client asset/risk visibility. All 19 tools are read-only "
+            "queries; there are no write/delete tools in this service. Tool "
+            "categories: company (connectsecure_get_company_companies to list "
+            "clients and get a company_id, company_stats for summary counts); "
+            "asset (vulnerabilities_details, asset_critical_vulnerabilities, "
+            "external_asset_vulnerabilities, remediate_records, risk_score for "
+            "vulnerability/remediation questions; assets, asset_view, "
+            "asset_stats, sw_problems_remediations_view for inventory); "
+            "active_directory (ad_users_view, ad_basic_info, ad_domain_details, "
+            "ad_groups_view, ad_password_policies, azure_secure_score for AD/"
+            "Azure AD security posture); users (get_users for platform user "
+            "accounts). Typical flow: call connectsecure_get_company_companies "
+            "first to resolve a company_id, then pass it (or filter via the "
+            "condition param) into the asset/active_directory report tools. "
+            "Most list tools take optional condition/skip/limit/order_by "
+            "params for filtering and pagination."
+        ),
         transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
     )
 

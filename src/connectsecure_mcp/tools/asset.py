@@ -5,21 +5,24 @@ from mcp.types import ToolAnnotations
 
 from .._json import dump_json_capped
 from ..api_client import ConnectSecureClient, ConnectSecureError
-from ._common import NO_TOKEN
+from ._common import NO_TOKEN, ConditionParam, LimitParam, OrderByParam, SkipParam
 
 _MAX_LIMIT = 200
 
 
 def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | None]) -> None:
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_asset_asset_critical_vulnerabilities(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve records.
+    async def connectsecure_get_asset_asset_critical_vulnerabilities(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """Vulnerability findings filtered to critical severity only, across all assets.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        A severity-scoped subset of the full finding set — see
+        connectsecure_get_asset_vulnerabilities_details for critical plus every
+        other severity.
         """
         client = client_factory()
         if client is None:
@@ -34,14 +37,16 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_asset_asset_stats(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve asset stats.
+    async def connectsecure_get_asset_asset_stats(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """Aggregate asset inventory counters (totals/breakdowns), not individual asset records.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        Summary numbers only; use connectsecure_get_asset_assets or
+        connectsecure_get_asset_asset_view for the underlying per-asset rows.
         """
         client = client_factory()
         if client is None:
@@ -56,14 +61,18 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_asset_asset_view(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve asset view.
+    async def connectsecure_get_asset_asset_view(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """Per-asset inventory view from ConnectSecure's core asset resource, one row per asset.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        Served from the dedicated asset resource rather than the report-query
+        group the other asset_* tools use; treat it as the primary asset
+        listing (see connectsecure_get_asset_assets for the report-query
+        variant, and connectsecure_get_asset_asset_stats for counts only).
         """
         client = client_factory()
         if client is None:
@@ -78,14 +87,17 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_asset_assets(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve assets.
+    async def connectsecure_get_asset_assets(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """Report-query asset list: one row per asset, same query group as asset_stats.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        Alongside the vulnerability/remediation report tools rather than the
+        core asset resource; see connectsecure_get_asset_asset_view for that
+        alternative asset listing.
         """
         client = client_factory()
         if client is None:
@@ -100,14 +112,17 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_asset_external_asset_vulnerabilities(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve records.
+    async def connectsecure_get_asset_external_asset_vulnerabilities(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """Vulnerability findings scoped to externally-facing (internet-exposed) assets only.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        The external-attack-surface subset; see
+        connectsecure_get_asset_vulnerabilities_details for the full
+        internal-plus-external finding set.
         """
         client = client_factory()
         if client is None:
@@ -122,14 +137,17 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_asset_remediate_records(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve records.
+    async def connectsecure_get_asset_remediate_records(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """Remediation action records: fixes applied/recommended per finding, not raw findings.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        Tracks remediation status/history; use
+        connectsecure_get_asset_vulnerabilities_details for the underlying
+        vulnerability findings being remediated.
         """
         client = client_factory()
         if client is None:
@@ -144,14 +162,16 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_asset_risk_score(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve records.
+    async def connectsecure_get_asset_risk_score(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """Computed aggregate risk-score rating per asset/company, not individual findings.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        A scoring/summary report — similar in role to asset_stats but
+        risk-focused rather than inventory-count-focused.
         """
         client = client_factory()
         if client is None:
@@ -166,14 +186,16 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_asset_sw_problems_remediations_view(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve records.
+    async def connectsecure_get_asset_sw_problems_remediations_view(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """Software-specific problems (missing/outdated software) paired with remediation status.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        Narrower than remediate_records: scoped to software problems
+        specifically, with fix status joined into the same view.
         """
         client = client_factory()
         if client is None:
@@ -188,14 +210,17 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_asset_vulnerabilities_details(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve records.
+    async def connectsecure_get_asset_vulnerabilities_details(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """Full vulnerability findings, all assets and severities: the base finding-level dataset.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        The other asset vulnerability tools are scoped subsets of this one:
+        asset_critical_vulnerabilities filters to critical severity,
+        external_asset_vulnerabilities filters to internet-exposed assets.
         """
         client = client_factory()
         if client is None:

@@ -5,7 +5,7 @@ from mcp.types import ToolAnnotations
 
 from .._json import dump_json_capped
 from ..api_client import ConnectSecureClient, ConnectSecureError
-from ._common import NO_TOKEN
+from ._common import NO_TOKEN, ConditionParam, LimitParam, OrderByParam, SkipParam
 
 _MAX_LIMIT = 200
 
@@ -13,14 +13,16 @@ _MAX_LIMIT = 200
 def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | None]) -> None:
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_users_get_users(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve Users.
+    async def connectsecure_get_users_get_users(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """ConnectSecure platform user accounts (portal/API users), not a company's own AD users.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        Distinct from ad_users_view, which covers a client company's Active
+        Directory accounts rather than ConnectSecure platform logins.
         """
         client = client_factory()
         if client is None:

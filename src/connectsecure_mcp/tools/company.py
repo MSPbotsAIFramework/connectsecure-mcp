@@ -1,25 +1,29 @@
 from collections.abc import Callable
+from typing import Annotated
 
 from mcp.server.fastmcp import FastMCP
 from mcp.types import ToolAnnotations
+from pydantic import Field
 
 from .._json import dump_json_capped
 from ..api_client import ConnectSecureClient, ConnectSecureError
-from ._common import NO_TOKEN
+from ._common import NO_TOKEN, ConditionParam, LimitParam, OrderByParam, SkipParam
 
 _MAX_LIMIT = 200
 
 
 def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | None]) -> None:
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_company_companies(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve companies.
+    async def connectsecure_get_company_companies(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """List of client companies (tenants) configured in ConnectSecure, with each company's id.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        Call this first to resolve a company_id for the asset/active_directory
+        report tools that require one.
         """
         client = client_factory()
         if client is None:
@@ -34,12 +38,13 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_company_companies_by_id(id: int) -> str:
-        """Retrieve company.
-
-        Args:
-            id: Required. id.
-        """
+    async def connectsecure_get_company_companies_by_id(
+        id: Annotated[
+            int,
+            Field(description="ConnectSecure company id, obtained from connectsecure_get_company_companies."),
+        ],
+    ) -> str:
+        """Single company record by its ConnectSecure company id."""
         client = client_factory()
         if client is None:
             return NO_TOKEN
@@ -52,14 +57,16 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
             return e.to_envelope()
 
     @mcp.tool(annotations=ToolAnnotations(readOnlyHint=True))
-    async def connectsecure_get_company_company_stats(condition: str | None = None, skip: int | None = None, limit: int | None = None, order_by: str | None = None) -> str:
-        """Retrieve company stats.
+    async def connectsecure_get_company_company_stats(
+        condition: ConditionParam = None,
+        skip: SkipParam = None,
+        limit: LimitParam = None,
+        order_by: OrderByParam = None,
+    ) -> str:
+        """Aggregate per-company statistics/counters, not the company list itself.
 
-        Args:
-            condition: Optional. Query Condition.
-            skip: Optional. Skip No of Records.
-            limit: Optional. Limit (max 200).
-            order_by: Optional. Order By.
+        Use connectsecure_get_company_companies for the actual company
+        records.
         """
         client = client_factory()
         if client is None:

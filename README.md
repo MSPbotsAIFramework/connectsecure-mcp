@@ -139,17 +139,17 @@ first).
 | active_directory | `connectsecure_get_active_directory_ad_domain_details` | Retrieve ad domain details. | company_id, source, condition?, skip?, limit?, order_by? |
 | active_directory | `connectsecure_get_active_directory_ad_groups_view` | Retrieve ad groups view. | condition?, skip?, limit?, order_by? |
 | active_directory | `connectsecure_get_active_directory_ad_password_policies` | Retrieve ad password policies. | condition?, skip?, limit?, order_by? |
-| active_directory | `connectsecure_get_active_directory_ad_users_view` | Retrieve ad users view. | condition?, skip?, limit?, order_by? |
+| active_directory | `connectsecure_get_active_directory_ad_users_view` | AD user account inventory for a client company (not ConnectSecure's own platform users — see `users_get_users`). | condition?, skip?, limit?, order_by? |
 | active_directory | `connectsecure_get_active_directory_azure_secure_score` | Retrieve azure secure score. | condition?, skip?, limit?, order_by? |
-| asset | `connectsecure_get_asset_asset_critical_vulnerabilities` | Retrieve records. | condition?, skip?, limit?, order_by? |
-| asset | `connectsecure_get_asset_asset_stats` | Retrieve asset stats. | condition?, skip?, limit?, order_by? |
-| asset | `connectsecure_get_asset_asset_view` | Retrieve asset view. | condition?, skip?, limit?, order_by? |
-| asset | `connectsecure_get_asset_assets` | Retrieve assets. | condition?, skip?, limit?, order_by? |
-| asset | `connectsecure_get_asset_external_asset_vulnerabilities` | Retrieve records. | condition?, skip?, limit?, order_by? |
-| asset | `connectsecure_get_asset_remediate_records` | Retrieve records. | condition?, skip?, limit?, order_by? |
-| asset | `connectsecure_get_asset_risk_score` | Retrieve records. | condition?, skip?, limit?, order_by? |
-| asset | `connectsecure_get_asset_sw_problems_remediations_view` | Retrieve records. | condition?, skip?, limit?, order_by? |
-| asset | `connectsecure_get_asset_vulnerabilities_details` | Retrieve records. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_asset_critical_vulnerabilities` | Vulnerability findings filtered to critical severity only (severity-scoped subset of `vulnerabilities_details`). | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_asset_stats` | Aggregate asset inventory counters, not individual asset records. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_asset_view` | Per-asset inventory view from the core asset resource (primary asset listing). | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_assets` | Report-query asset list, same query group as `asset_stats` (alternative to `asset_view`). | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_external_asset_vulnerabilities` | Vulnerability findings scoped to externally-facing (internet-exposed) assets only. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_remediate_records` | Remediation action records (fixes applied/recommended per finding), not raw findings. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_risk_score` | Computed aggregate risk-score rating per asset/company. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_sw_problems_remediations_view` | Software-specific problems (missing/outdated software) paired with remediation status. | condition?, skip?, limit?, order_by? |
+| asset | `connectsecure_get_asset_vulnerabilities_details` | Full vulnerability findings across all assets/severities (base finding-level dataset). | condition?, skip?, limit?, order_by? |
 | company | `connectsecure_get_company_companies` | Retrieve companies. | condition?, skip?, limit?, order_by? |
 | company | `connectsecure_get_company_companies_by_id` | Retrieve company. | id |
 | company | `connectsecure_get_company_company_stats` | Retrieve company stats. | condition?, skip?, limit?, order_by? |

@@ -142,7 +142,9 @@ def register(mcp: FastMCP, client_factory: Callable[[], ConnectSecureClient | No
     ) -> str:
         """Active Directory user account inventory: usernames, enabled/disabled status, attributes.
 
-        Per-user view; see ad_groups_view for group membership instead.
+        A client company's own AD accounts, not ConnectSecure's platform
+        logins — see connectsecure_get_users_get_users for those. Per-user
+        view; see ad_groups_view for group membership instead.
         """
         client = client_factory()
         if client is None:

@@ -112,6 +112,8 @@ def create_mcp_server(settings: Settings) -> FastMCP:
             "params for filtering and pagination."
         ),
         transport_security=TransportSecuritySettings(enable_dns_rebinding_protection=False),
+        stateless_http=True,
+        json_response=True,
     )
 
     client_factory: Callable[[], ConnectSecureClient | None] = lambda: get_client_from_context(

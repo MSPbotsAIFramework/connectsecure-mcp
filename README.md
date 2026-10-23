@@ -162,13 +162,13 @@ receives the already-obtained access token (plus the user id and pod
 hostname) via request headers, and forwards them upstream as
 `Authorization: Bearer <token>` and `X-USER-ID: <user_id>` on every call.
 
-### HEADER 授权参数说明
+### HEADER Authentication Parameters
 
-| Header | 类型 | 是否必填 | 默认值 | 枚举值 | 字段描述 | Example |
+| Header | Type | Required | Default | Allowed values | Description | Example |
 |---|---|---|---|---|---|---|
-| `X-ConnectSecure-Access-Token` | string | 是 | 无 | 无 | `POST {base_url}/w/authorize` 返回的 JWT access_token，原样转发为上游 `Authorization: Bearer <token>` | `eyJhbGciOi...` |
-| `X-ConnectSecure-User-Id` | string | 是 | 无 | 无 | 同一次 `/w/authorize` 调用返回的 `user_id`，原样转发为上游 `X-USER-ID` 请求头 | `1234` |
-| `X-ConnectSecure-Base-Url` | string | 是 | 无 | 无 | 该租户的 ConnectSecure pod 主机名（每个租户独立，不固定） | `https://pod1.connectsecure.com` |
+| `X-ConnectSecure-Access-Token` | string | Yes | None | None | The JWT access_token returned by `POST {base_url}/w/authorize`, forwarded as-is as the upstream `Authorization: Bearer <token>` | `eyJhbGciOi...` |
+| `X-ConnectSecure-User-Id` | string | Yes | None | None | The `user_id` returned by the same `/w/authorize` call, forwarded as-is as the upstream `X-USER-ID` request header | `1234` |
+| `X-ConnectSecure-Base-Url` | string | Yes | None | None | The tenant's ConnectSecure pod hostname (per tenant, not fixed) | `https://pod1.connectsecure.com` |
 
 Missing any of the three headers returns `401`:
 ```json
@@ -182,10 +182,10 @@ Missing any of the three headers returns `401`:
 
 ## Environment Variables
 
-| Variable | 类型 | 是否必填 | 默认值 | 说明 |
+| Variable | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `MCP_HTTP_PORT` | int | 否 | `8080` | HTTP 监听端口 |
-| `MCP_HTTP_HOST` | string | 否 | `0.0.0.0` | HTTP 监听地址 |
+| `MCP_HTTP_PORT` | int | No | `8080` | HTTP listen port |
+| `MCP_HTTP_HOST` | string | No | `0.0.0.0` | HTTP listen address |
 
 (No `*_BASE_URL` env var — the pod hostname is per-tenant and always supplied
 via the `X-ConnectSecure-Base-Url` header, never a fixed default.)
@@ -227,7 +227,7 @@ first).
 | company | `connectsecure_get_company_company_stats` | Retrieve company stats. | condition?, skip?, limit?, order_by? |
 | users | `connectsecure_get_users_get_users` | Retrieve Users. | condition?, skip?, limit?, order_by? |
 
-## 测试示例
+## Test Example
 
 ```bash
 # Health check
